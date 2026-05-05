@@ -1,0 +1,21 @@
+[plugin]
+name = "morse"
+version = "1.1.0"
+description = "Encode and decode Morse code from the terminal"
+author = "corvid-agent"
+license = "MIT"
+repository = "https://github.com/corvid-agent/fledge-plugin-morse"
+keywords = ["morse", "code", "encode", "decode", "signal"]
+min_fledge_version = "0.10.0"
+
+[plugin.commands.encode]
+description = "Convert text to Morse code"
+usage = "fledge morse encode <TEXT>"
+
+[plugin.commands.decode]
+description = "Convert Morse code back to text"
+usage = "fledge morse decode <MORSE>"
+
+[plugin.commands.table]
+description = "Show the full Morse code table"
+usage = "fledge morse table"
