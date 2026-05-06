@@ -1,128 +1,5 @@
 import Foundation
-
-// MARK: - Morse Code Table
-
-let morseTable: [(Character, String)] = [
-    // Letters
-    ("A", ".-"),
-    ("B", "-..."),
-    ("C", "-.-."),
-    ("D", "-.."),
-    ("E", "."),
-    ("F", "..-."),
-    ("G", "--."),
-    ("H", "...."),
-    ("I", ".."),
-    ("J", ".---"),
-    ("K", "-.-"),
-    ("L", ".-.."),
-    ("M", "--"),
-    ("N", "-."),
-    ("O", "---"),
-    ("P", ".--."),
-    ("Q", "--.-"),
-    ("R", ".-."),
-    ("S", "..."),
-    ("T", "-"),
-    ("U", "..-"),
-    ("V", "...-"),
-    ("W", ".--"),
-    ("X", "-..-"),
-    ("Y", "-.--"),
-    ("Z", "--.."),
-    // Digits
-    ("0", "-----"),
-    ("1", ".----"),
-    ("2", "..---"),
-    ("3", "...--"),
-    ("4", "....-"),
-    ("5", "....."),
-    ("6", "-...."),
-    ("7", "--..."),
-    ("8", "---.."),
-    ("9", "----."),
-    // Punctuation
-    (".", ".-.-.-"),
-    (",", "--..--"),
-    ("?", "..--.."),
-    ("!", "-.-.--"),
-    ("/", "-..-."),
-    ("@", ".--.-."),
-    ("(", "-.--."),
-    (")", "-.--.-"),
-    ("&", ".-..."),
-    (":", "---..."),
-    (";", "-.-.-."),
-    ("=", "-...-"),
-    ("+", ".-.-."),
-    ("-", "-....-"),
-    ("_", "..--.-"),
-    ("\"", ".-..-."),
-    ("'", ".----."),
-]
-
-let charToMorse: [Character: String] = Dictionary(uniqueKeysWithValues: morseTable)
-let morseToChar: [String: Character] = Dictionary(uniqueKeysWithValues: morseTable.map { ($0.1, $0.0) })
-
-// MARK: - Encode
-
-func encode(_ text: String) -> String {
-    let uppercased = text.uppercased()
-    var result: [String] = []
-    var skipped: [Character] = []
-
-    for char in uppercased {
-        if char == " " {
-            result.append("/")
-        } else if let morse = charToMorse[char] {
-            result.append(morse)
-        } else {
-            if !skipped.contains(char) {
-                skipped.append(char)
-            }
-        }
-    }
-
-    if !skipped.isEmpty {
-        let skippedStr = skipped.map { String($0) }.joined(separator: ", ")
-        print("Note: skipped unknown character(s): \(skippedStr)")
-    }
-
-    return result.joined(separator: " ")
-}
-
-// MARK: - Decode
-
-func decode(_ morse: String) -> String {
-    // Normalize word separators: " / " is the standard word separator
-    // Also handle multiple spaces as word separator
-    let words = morse.components(separatedBy: " / ")
-    var result: [String] = []
-    var skipped: [String] = []
-
-    for word in words {
-        var decoded = ""
-        // Split each word by spaces to get individual Morse characters
-        let symbols = word.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
-        for symbol in symbols {
-            if let char = morseToChar[symbol] {
-                decoded.append(char)
-            } else {
-                if !skipped.contains(symbol) {
-                    skipped.append(symbol)
-                }
-            }
-        }
-        result.append(decoded)
-    }
-
-    if !skipped.isEmpty {
-        let skippedStr = skipped.joined(separator: ", ")
-        print("Note: skipped unknown Morse sequence(s): \(skippedStr)")
-    }
-
-    return result.joined(separator: " ")
-}
+import MorseLib
 
 // MARK: - Table
 
@@ -131,7 +8,6 @@ func printTable() {
     print(String(repeating: "=", count: 40))
 
     print("\nLetters:")
-    // Print letters in 2 columns
     let letters = morseTable.filter { $0.0 >= "A" && $0.0 <= "Z" }
     let half = (letters.count + 1) / 2
     for i in 0..<half {
@@ -194,7 +70,12 @@ case "encode":
         print("Usage: fledge morse encode <TEXT>")
         exit(1)
     }
-    print(encode(text))
+    let result = encodeMorse(text)
+    if !result.skipped.isEmpty {
+        let skippedStr = result.skipped.map { String($0) }.joined(separator: ", ")
+        print("Note: skipped unknown character(s): \(skippedStr)")
+    }
+    print(result.morse)
 
 case "decode":
     let morse = args.dropFirst().joined(separator: " ")
@@ -203,7 +84,12 @@ case "decode":
         print("Usage: fledge morse decode <MORSE>")
         exit(1)
     }
-    print(decode(morse))
+    let result = decodeMorse(morse)
+    if !result.skipped.isEmpty {
+        let skippedStr = result.skipped.joined(separator: ", ")
+        print("Note: skipped unknown Morse sequence(s): \(skippedStr)")
+    }
+    print(result.text)
 
 case "table":
     printTable()
